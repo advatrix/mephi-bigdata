@@ -1,0 +1,10 @@
+2023-04-05 14:55:47 [notice]	application: bla bla bla
+2023-04-05 14:55:48 [error]	application: bla bla bla
+2023-04-05 14:55:49 [warn]	application: bla bla bla
+2023-04-05 14:55:50 [crit]	application: bla bla bla
+2023-04-05 14:55:51 [alert]	application: bla bla bla
+2023-04-05 14:55:52 [alert]	application: bla bla bla
+2023-04-05 14:55:53 [crit]	application: bla bla bla
+2023-04-05 14:55:54 [emerg]	application: bla bla bla
+2023-04-05 14:55:55 [warning]	application: bla bla bla
+2023-04-05 14:55:56 [warn]	application: bla bla bla
