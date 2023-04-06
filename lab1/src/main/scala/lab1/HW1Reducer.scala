@@ -1,15 +1,15 @@
 package lab1
 
-import org.apache.hadoop.io.{IntWritable, ObjectWritable, Text}
+import org.apache.hadoop.io.{IntWritable, MapWritable, ObjectWritable, Text}
 import org.apache.hadoop.mapreduce.Reducer
 
 import java.io.IOException
 import java.lang
 
-class HW1Reducer extends Reducer[ObjectWritable, IntWritable, Text, Text]{
+class HW1Reducer extends Reducer[Text, IntWritable, Text, Text] {
   @throws[IOException]
   @throws[InterruptedException]
-  override def reduce(key: ObjectWritable, values: lang.Iterable[IntWritable], context: Reducer[ObjectWritable, IntWritable, Text, Text]#Context): Unit = {
+  override def reduce(key: Text, values: lang.Iterable[IntWritable], context: Reducer[Text, IntWritable, Text, Text]#Context): Unit = {
     val stats = scala.collection.mutable.Map.empty[Int, Int]
 
     while (values.iterator.hasNext)
@@ -18,7 +18,10 @@ class HW1Reducer extends Reducer[ObjectWritable, IntWritable, Text, Text]{
         case _ => Some(1)
       }
 
-
+    val result = new Text(
+      stats.toSeq.sortBy(_._1) map { case severity -> count => s"$severity: $count"} mkString ", "
+    )
+    context.write(key, result)
   }
 
 }

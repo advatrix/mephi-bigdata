@@ -1,24 +1,34 @@
 package lab1
 
+import lab1.HW1Mapper.DateHourFormatter
 import org.apache.hadoop.io.{IntWritable, LongWritable, MapWritable, ObjectWritable, Text}
 import org.apache.hadoop.mapreduce.Mapper
 
 import java.io.IOException
 import java.sql.Timestamp
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.{LocalDate, LocalDateTime, LocalTime}
+import scala.util.Try
 
-class HW1Mapper extends Mapper[LongWritable, Text, ObjectWritable, IntWritable] {
+class HW1Mapper extends Mapper[LongWritable, Text, Text, IntWritable] {
   private val UnknownSeverityLevel = -1
-
   @throws[IOException]
   @throws[InterruptedException]
-  override protected def map(key: LongWritable, value: Text, context: Mapper[LongWritable, Text, ObjectWritable, IntWritable]#Context): Unit = {
+  override protected def map(key: LongWritable, value: Text, context: Mapper[LongWritable, Text, Text, IntWritable]#Context): Unit = {
+    println(value.toString.split("\\s").take(3).toSeq)
+
     val (time, severityLevel) =
-      value.toString.split(" ").take(3).toSeq match {
-        case rawDate :: rawTime :: rawSeverity :: Nil =>
-          val time = LocalDate.parse(rawDate) atTime LocalTime.parse(rawTime) truncatedTo ChronoUnit.HOURS
-          val severityLevel = rawSeverity match {
+      value.toString.split("\\s").take(3).toList match {
+        case rawDate :: rawTime :: rawSeverity :: _ =>
+          val time = Try(
+            Some(LocalDate.parse(rawDate) atTime LocalTime.parse(rawTime) truncatedTo ChronoUnit.HOURS)
+          ).toOption.flatten
+
+          println(rawSeverity)
+          println(rawSeverity drop 1 dropRight 1)
+
+          val severityLevel = rawSeverity dropRight 1 drop 1 match {
             case "emerg" | "panic" => 0
             case "alert" => 1
             case "crit" => 2
@@ -31,13 +41,21 @@ class HW1Mapper extends Mapper[LongWritable, Text, ObjectWritable, IntWritable] 
           }
 
           (time, severityLevel)
+        case _ =>
+          (None, UnknownSeverityLevel)
       }
+
+    println(severityLevel)
 
     if (severityLevel == UnknownSeverityLevel)
       context.getCounter(Counter.Malformed, "").increment(1)
     else
-      context.write(TimeWritable(time), new IntWritable(severityLevel))
+      context.write(new Text(time.map(_.format(DateHourFormatter)) getOrElse ""), new IntWritable(severityLevel))
   }
+}
+
+object HW1Mapper {
+  lazy val DateHourFormatter: DateTimeFormatter = DateTimeFormatter ofPattern "dd.MM.yyyy hh"
 }
 
 case class TimeWritable(time: LocalDateTime) extends ObjectWritable
