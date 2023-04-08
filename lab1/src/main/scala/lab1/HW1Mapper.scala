@@ -16,7 +16,6 @@ class HW1Mapper extends Mapper[LongWritable, Text, Text, IntWritable] {
   @throws[IOException]
   @throws[InterruptedException]
   override protected def map(key: LongWritable, value: Text, context: Mapper[LongWritable, Text, Text, IntWritable]#Context): Unit = {
-    println(value.toString.split("\\s").take(3).toSeq)
 
     val (time, severityLevel) =
       value.toString.split("\\s").take(3).toList match {
@@ -24,9 +23,6 @@ class HW1Mapper extends Mapper[LongWritable, Text, Text, IntWritable] {
           val time = Try(
             Some(LocalDate.parse(rawDate) atTime LocalTime.parse(rawTime) truncatedTo ChronoUnit.HOURS)
           ).toOption.flatten
-
-          println(rawSeverity)
-          println(rawSeverity drop 1 dropRight 1)
 
           val severityLevel = rawSeverity dropRight 1 drop 1 match {
             case "emerg" | "panic" => 0
@@ -45,8 +41,6 @@ class HW1Mapper extends Mapper[LongWritable, Text, Text, IntWritable] {
           (None, UnknownSeverityLevel)
       }
 
-    println(severityLevel)
-
     if (severityLevel == UnknownSeverityLevel)
       context.getCounter(Counter.Malformed, "").increment(1)
     else
@@ -55,7 +49,7 @@ class HW1Mapper extends Mapper[LongWritable, Text, Text, IntWritable] {
 }
 
 object HW1Mapper {
-  lazy val DateHourFormatter: DateTimeFormatter = DateTimeFormatter ofPattern "dd.MM.yyyy hh"
+  lazy val DateHourFormatter: DateTimeFormatter = DateTimeFormatter ofPattern "dd.MM.yyyy HH"
 }
 
 case class TimeWritable(time: LocalDateTime) extends ObjectWritable

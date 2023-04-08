@@ -33,10 +33,12 @@ object MapReduceApplication extends App with Logging {
   job.setOutputFormatClass(classOf[SequenceFileOutputFormat[_, _]])
 
   inputFolders.foreach { folder => FileInputFormat.addInputPath(job, folder) }
-  FileOutputFormat.setOutputPath(job, outputFolder)
+
   FileOutputFormat.setCompressOutput(job, true)
-  SequenceFileOutputFormat.setOutputCompressionType(job, CompressionType.BLOCK)
   FileOutputFormat.setOutputCompressorClass(job, classOf[SnappyCodec])
+  SequenceFileOutputFormat.setOutputCompressionType(job, CompressionType.BLOCK)
+
+  FileOutputFormat.setOutputPath(job, outputFolder)
   conf.set("mapreduce.output.fileoutputformat.compress", "true")
   conf.set("mapreduce.output.fileoutputformat.compress.type", "BLOCK")
   conf.set("mapreduce.output.fileoutputformat.compress.codec", "org.apache.hadoop.io.compress.SnappyCodec")
